@@ -12,7 +12,7 @@ import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.presentation.screens
 fun AppNavigation(navController: NavHostController){
     NavHost(navController, startDestination = AppNavRoutes.Home.route){
         composable(AppNavRoutes.Home.route){ HomeScreen(navController)}
-        composable(AppNavRoutes.PetList.route){ PetScreen()}
-        composable(AppNavRoutes.OwnerList.route){ OwnerScreen()}
+        composable(AppNavRoutes.PetList.route){ PetScreen(navController)}
+        composable(AppNavRoutes.OwnerList.route){ OwnerScreen(navController)}
     }
 }

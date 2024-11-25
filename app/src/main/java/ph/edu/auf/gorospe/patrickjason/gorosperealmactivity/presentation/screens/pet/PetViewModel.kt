@@ -9,13 +9,10 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.RealmHelper
-import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.OwnerModel
-import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetData
-import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetModel
-import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetTypeWithIcon
-import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.getDefaultPetTypes
+import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.*
 
 class PetViewModel : ViewModel() {
+    // StateFlows for UI state management
     private val _petTypes = MutableStateFlow(getDefaultPetTypes())
     val petTypes: StateFlow<List<PetTypeWithIcon>> = _petTypes.asStateFlow()
 
@@ -37,41 +34,24 @@ class PetViewModel : ViewModel() {
         loadOwners()
     }
 
+    // Observes search query changes with debounce to prevent rapid database queries
     @OptIn(FlowPreview::class)
     private fun observeSearchQuery() {
         viewModelScope.launch {
             searchQuery
-                .debounce(300)
+                .debounce(300) // Prevent rapid firing of search queries
                 .collect { query ->
-                    if (query.isEmpty()) {
-                        loadPets()
-                    } else {
-                        searchPets(query)
-                    }
+                    if (query.isEmpty()) loadPets() else searchPets(query)
                 }
         }
     }
 
+    // Updates the current search query value
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
 
-    private fun loadPets() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val realm = RealmHelper.getRealmInstance()
-            val results = realm.query<PetModel>().find()
-            _pets.value = results
-        }
-    }
-
-    private fun loadOwners() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val realm = RealmHelper.getRealmInstance()
-            val results = realm.query<OwnerModel>().find()
-            _owners.value = results
-        }
-    }
-
+    // Performs case-insensitive search on pet name and type
     private fun searchPets(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val realm = RealmHelper.getRealmInstance()
@@ -81,12 +61,29 @@ class PetViewModel : ViewModel() {
         }
     }
 
+    // Loads all pets from the database
+    private fun loadPets() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val realm = RealmHelper.getRealmInstance()
+            _pets.value = realm.query<PetModel>().find()
+        }
+    }
+
+    // Loads all owners from the database
+    private fun loadOwners() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val realm = RealmHelper.getRealmInstance()
+            _owners.value = realm.query<OwnerModel>().find()
+        }
+    }
+
+    // Adds a new pet to the database and associates it with an owner if specified
     fun addPet(name: String, type: String, age: Int, hasOwner: Boolean, ownerName: String?) {
         viewModelScope.launch {
             val realm = RealmHelper.getRealmInstance()
 
             realm.write {
-                // Create a new pet instance
+                // Create new pet instance with provided details
                 val pet = PetModel().apply {
                     this.name = name
                     this.petType = type
@@ -97,53 +94,48 @@ class PetViewModel : ViewModel() {
 
                 val createdPet = copyToRealm(pet)
 
+                // Log pet creation details
                 Log.d("PetAdd", "Created Pet: ${createdPet.name}, ID: ${createdPet.id}")
-                Log.d("PetAdd", "hasOwner value: $hasOwner")
-                Log.d("PetAdd", "ownerName value: $ownerName")
+                Log.d("PetAdd", "hasOwner: $hasOwner, ownerName: $ownerName")
 
-                // Find the owner
-                val existingOwner = query<OwnerModel>("name == $0", ownerName).first().find()
-
-                existingOwner?.let { owner ->
-                    val latestOwner = findLatest(owner)
-                    latestOwner?.pets?.add(createdPet)
-
-                    Log.d("PetAdd", "Owner ${latestOwner?.name} Pet List: ${latestOwner?.pets?.map { it.name }}")
-                    Log.d("PetAdd", "Total Pets for Owner: ${latestOwner?.pets?.size}")
+                // Associate pet with owner if one is specified
+                query<OwnerModel>("name == $0", ownerName).first().find()?.let { owner ->
+                    findLatest(owner)?.pets?.add(createdPet)
+                    Log.d("PetAdd", "Owner ${owner.name} Pet List: ${owner.pets.map { it.name }}")
                 }
             }
 
-            loadPets() // Refresh pets list
-            viewModelScope.launch {
-                _showSnackbar.emit("Pet added successfully")
-            }
+            loadPets()
+            _showSnackbar.emit("Pet added successfully")
         }
     }
 
-
+    // Updates existing pet information and manages owner relationships
     fun updatePet(updatedPet: PetData) {
         viewModelScope.launch {
             val realm = RealmHelper.getRealmInstance()
             try {
                 realm.write {
-                    // Find and update the pet within the same write transaction
+                    // Find existing pet or throw exception if not found
                     val existingPet = this.query<PetModel>("id == $0", updatedPet.id).first().find()
                         ?: throw Exception("Pet not found")
 
-                    // If the pet has an owner and the owner name is changing, we need to handle the owner relationships
+                    // Handle owner relationship changes if necessary
                     if (existingPet.hasOwner && existingPet.ownerName != updatedPet.ownerName) {
-                        // Remove pet from old owner if exists
-                        val oldOwner = this.query<OwnerModel>("name == $0", existingPet.ownerName).first().find()
-                        oldOwner?.pets?.removeAll { it.id == existingPet.id }
+                        // Remove pet from current owner's list
+                        this.query<OwnerModel>("name == $0", existingPet.ownerName).first().find()?.let { oldOwner ->
+                            oldOwner.pets.removeAll { it.id == existingPet.id }
+                        }
 
-                        // Add pet to new owner if specified
+                        // Add pet to new owner's list if specified
                         if (updatedPet.hasOwner && !updatedPet.ownerName.isNullOrEmpty()) {
-                            val newOwner = this.query<OwnerModel>("name == $0", updatedPet.ownerName).first().find()
-                            newOwner?.pets?.add(existingPet)
+                            this.query<OwnerModel>("name == $0", updatedPet.ownerName).first().find()?.let { newOwner ->
+                                newOwner.pets.add(existingPet)
+                            }
                         }
                     }
 
-                    // Update pet details
+                    // Update pet's information
                     existingPet.apply {
                         name = updatedPet.name
                         petType = updatedPet.petType
@@ -153,10 +145,8 @@ class PetViewModel : ViewModel() {
                     }
                 }
 
-                // Refresh the lists after the transaction is complete
                 loadPets()
                 loadOwners()
-
                 _showSnackbar.emit("Pet updated successfully")
             } catch (e: Exception) {
                 _showSnackbar.emit("Error updating pet: ${e.message}")
@@ -164,82 +154,67 @@ class PetViewModel : ViewModel() {
         }
     }
 
-
+    // Deletes a pet if it has no owner
     fun deletePet(petId: String) {
         viewModelScope.launch {
             val realm = RealmHelper.getRealmInstance()
             realm.write {
                 val pet = this.query<PetModel>("id == $0", petId).first().find()
 
-                if (pet == null) {
-                    Log.e("PetDelete", "Pet with ID $petId not found.")
-                    viewModelScope.launch { _showSnackbar.emit("Pet not found.") }
-                    return@write
-                }
-
-                // Check if the pet has an owner
-                if (pet.hasOwner) {
-                    Log.e("PetDelete", "Cannot delete pet with ID $petId because it has an owner.")
-                    viewModelScope.launch {
-                        _showSnackbar.emit("Cannot delete this pet because it has an owner. Please remove owner association first.")
+                when {
+                    pet == null -> {
+                        // Log and notify if pet not found
+                        Log.e("PetDelete", "Pet with ID $petId not found.")
+                        viewModelScope.launch { _showSnackbar.emit("Pet not found.") }                    }
+                    pet.hasOwner -> {
+                        // Prevent deletion of owned pets
+                        Log.e("PetDelete", "Cannot delete pet with ID $petId - has owner.")
+                        viewModelScope.launch {
+                            _showSnackbar.emit("Cannot delete this pet because it has an owner. Please remove owner association first.")
+                        }
                     }
-                    return@write
+                    else -> {
+                        // Delete pet if conditions are met
+                        delete(pet)
+                        Log.d("PetDelete", "Pet deleted successfully.")
+                        viewModelScope.launch { _showSnackbar.emit("Pet deleted successfully.") }                    }
                 }
-
-                // If we get here, the pet has no owner and can be safely deleted
-                delete(pet)
-                Log.d("PetDelete", "Pet deleted successfully.")
-                viewModelScope.launch { _showSnackbar.emit("Pet deleted successfully.") }
             }
 
             loadPets()
         }
     }
 
-
+    // Handles pet adoption process by linking pet with owner
     fun adoptPet(petId: String, ownerName: String) {
         viewModelScope.launch {
             val realm = RealmHelper.getRealmInstance()
             try {
                 realm.write {
-                    // Find the owner by name
+                    // Find owner and pet, throw exception if either not found
                     val owner = this.query<OwnerModel>("name == $0", ownerName).first().find()
                         ?: throw Exception("Owner not found")
 
-                    // Find the pet by its ID
-                    val pet = this.query<PetModel>("id == $0", petId).first().find()
+                    val pet = this.query<PetModel>("id == $0", petId).first().find()?.let { findLatest(it) }
                         ?: throw Exception("Pet not found")
 
-                    // Ensure pet is not null before calling findLatest
-                    val latestPet = findLatest(pet)
-                        ?: throw Exception("Pet not found")
-
-                    // Check if pet is already adopted
-                    if (latestPet.hasOwner) {
-                        throw Exception("This pet is already adopted by ${latestPet.ownerName}")
+                    // Check adoption conditions and process if valid
+                    when {
+                        pet.hasOwner -> throw Exception("Pet already adopted by ${pet.ownerName}")
+                        owner.pets.any { it.id == petId } -> throw Exception("You already adopted this pet")
+                        else -> {
+                            pet.hasOwner = true
+                            pet.ownerName = ownerName
+                            owner.pets.add(pet)
+                        }
                     }
-
-                    // Check if owner already has this pet
-                    val isDuplicate = owner.pets.any { it.id == petId }
-                    if (isDuplicate) {
-                        throw Exception("You have already adopted this pet")
-                    }
-
-                    // Update pet's owner status
-                    latestPet.hasOwner = true
-                    latestPet.ownerName = ownerName
-
-                    // Add pet to owner's list of pets
-                    owner.pets.add(latestPet)
                 }
 
-                // Refresh pets and owners lists
                 loadPets()
                 loadOwners()
-
                 _showSnackbar.emit("Pet adopted successfully")
             } catch (e: Exception) {
-                _showSnackbar.emit("Pet already has an owner, edit pet instead to transfer ownership")
+                _showSnackbar.emit(e.message ?: "Error during adoption")
             }
         }
     }

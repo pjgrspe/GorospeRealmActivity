@@ -167,7 +167,7 @@ fun ItemPet(
                         FilledIconButton(
                             onClick = { onAdopt(petModel) },
                             colors = IconButtonDefaults.filledIconButtonColors(
-                                containerColor = Color(0xFF81C784),
+                                containerColor = Color(0xFF64B5F6),
                                 contentColor = Color.White
                             )
                         ) {

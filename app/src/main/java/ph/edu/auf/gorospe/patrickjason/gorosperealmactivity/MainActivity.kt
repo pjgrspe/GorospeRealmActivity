@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         RealmHelper.initializeRealm()
         enableEdgeToEdge()
         setContent {
-            AppTheme {
+            RealmActivityTheme {
                 val navController = rememberNavController()
                 AppNavigation(navController)
             }

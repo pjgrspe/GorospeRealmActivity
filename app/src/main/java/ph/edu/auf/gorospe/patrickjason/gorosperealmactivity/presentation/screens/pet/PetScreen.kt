@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetModel
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.toPetData
@@ -27,6 +29,7 @@ import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.presentation.compone
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetScreen(
+    navController: NavHostController,
     petViewModel: PetViewModel = viewModel()
 ) {
     val pets by petViewModel.pets.collectAsState()
@@ -67,6 +70,15 @@ fun PetScreen(
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = Color(0xFF5D4037).copy(alpha = 0.7f)
                             )
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color(0xFF5D4037) // Brown color matching title
                         )
                     }
                 },
