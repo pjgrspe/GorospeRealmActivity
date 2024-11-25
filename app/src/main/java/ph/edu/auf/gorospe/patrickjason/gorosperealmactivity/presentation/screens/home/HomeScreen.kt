@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -44,7 +45,10 @@ fun HomeScreen(navController: NavController) {
         Button(
             onClick = { navController.navigate(AppNavRoutes.PetList.route) },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)), // Light green
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(56.dp)
         ) {
             Text(
                 text = "🐕 View Pet List",
@@ -55,7 +59,10 @@ fun HomeScreen(navController: NavController) {
         Button(
             onClick = { navController.navigate(AppNavRoutes.OwnerList.route) },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF64B5F6)), // Light blue
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(56.dp)
         ) {
             Text(
                 text = "👤 View Owner List",

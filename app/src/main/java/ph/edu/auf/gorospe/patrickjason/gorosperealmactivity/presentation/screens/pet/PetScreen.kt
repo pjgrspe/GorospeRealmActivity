@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetData
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetModel
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.toPetData
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.presentation.components.ItemPet
@@ -166,14 +167,8 @@ fun PetScreen(
             petTypes = petTypes,
             owners = owners,
             onDismiss = { showAddPetDialog = false },
-            onAddPet = { newPet ->
-                petViewModel.addPet(
-                    name = newPet.name,
-                    type = newPet.petType,
-                    age = newPet.age,
-                    hasOwner = newPet.hasOwner,
-                    ownerName = newPet.ownerName
-                )
+            onAddPet = { petData ->
+                petViewModel.addPet(petData)
                 showAddPetDialog = false
             }
         )

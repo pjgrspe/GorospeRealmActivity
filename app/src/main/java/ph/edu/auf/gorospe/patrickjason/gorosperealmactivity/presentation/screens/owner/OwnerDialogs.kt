@@ -1,9 +1,11 @@
 package ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.presentation.screens.owner
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.OwnerData
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetModel
@@ -46,7 +48,10 @@ fun AddOwnerDialog(
                     name = it
                     isError = false
                 },
-                label = "Owner Name"
+                label = "Owner Name",
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text
+                )
             )
 
             if (isError) {
@@ -91,7 +96,10 @@ fun EditOwnerDialog(
                     name = it
                     isError = it.isBlank()
                 },
-                label = "Owner Name"
+                label = "Owner Name",
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text
+                )
             )
 
             if (isError) {

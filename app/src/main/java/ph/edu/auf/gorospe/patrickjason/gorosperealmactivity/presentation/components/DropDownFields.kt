@@ -81,7 +81,7 @@ fun <T> CustomDropdownMenuField(
                     Text(
                         text = placeholder,
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = Color(0xFF5D4037).copy(alpha = 0.5f)
+                            color = Color.Gray
                         )
                     )
                 },
@@ -91,7 +91,8 @@ fun <T> CustomDropdownMenuField(
                     unfocusedBorderColor = Color(0xFF5D4037),
                     focusedBorderColor = Color(0xFF5D4037),
                     cursorColor = Color(0xFF81C784),
-                    focusedTextColor = Color(0xFF5D4037)
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.DarkGray
                 ),
                 modifier = Modifier
                     .fillMaxWidth()

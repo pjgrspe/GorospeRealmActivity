@@ -3,12 +3,15 @@ package ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.presentation.screen
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.OwnerModel
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetData
@@ -26,7 +29,7 @@ fun AddPetDialog(
     petTypes: List<PetTypeWithIcon>,
     owners: List<OwnerModel>,
     onDismiss: () -> Unit,
-    onAddPet: (PetModel) -> Unit
+    onAddPet: (PetData) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(petTypes.firstOrNull() ?: PetTypeWithIcon("Other", "🐾")) }
@@ -38,17 +41,16 @@ fun AddPetDialog(
     CustomDialog(
         title = "Add New Pet",
         onConfirm = {
-            if (name.isNotBlank() && age.isNotBlank()) {
-                val parsedAge = age.toIntOrNull()
+            if (name.isNotBlank() && age.isNotBlank() && (!hasOwner || selectedOwner != null)){                val parsedAge = age.toIntOrNull()
                 if (parsedAge != null && parsedAge >= 0) {
-                    val newPet = PetModel().apply {
-                        id = UUID.randomUUID().toString()
-                        this.name = name.trim()
-                        petType = selectedType.type
-                        this.age = parsedAge
-                        hasOwner = hasOwner
+                    val newPet = PetData(
+                        id = UUID.randomUUID().toString(),
+                        name = name,
+                        petType = selectedType.type,
+                        age = age.toInt(),
+                        hasOwner = selectedOwner != null,
                         ownerName = selectedOwner?.name
-                    }
+                    )
                     onAddPet(newPet)
                     onDismiss()
                     isError = false
@@ -66,7 +68,10 @@ fun AddPetDialog(
                 value = name,
                 placeholder = "Name",
                 onValueChange = { name = it; isError = false },
-                label = "Pet Name"
+                label = "Pet Name",
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text
+                )
             )
             Spacer(modifier = Modifier.height(8.dp))
             PetTypeDropdown(
@@ -84,7 +89,10 @@ fun AddPetDialog(
                         isError = false
                     }
                 },
-                label = "Age"
+                label = "Age",
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                )
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -144,7 +152,7 @@ fun EditPetDialog(
     CustomDialog(
         title = "Edit Pet",
         onConfirm = {
-            if (name.isNotBlank() && age.isNotBlank()) {
+            if (name.isNotBlank() && age.isNotBlank() && (!hasOwner || selectedOwner != null)){
                 val parsedAge = age.toIntOrNull()
                 if (name.isNotBlank() && age.isNotBlank()) {
                     val parsedAge = age.toIntOrNull()
@@ -177,7 +185,10 @@ fun EditPetDialog(
                 value = name,
                 placeholder = "Name",
                 onValueChange = { name = it; isError = false },
-                label = "Pet Name"
+                label = "Pet Name",
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text
+                )
             )
             Spacer(modifier = Modifier.height(8.dp))
             PetTypeDropdown(
@@ -195,7 +206,10 @@ fun EditPetDialog(
                         isError = false
                     }
                 },
-                label = "Age"
+                label = "Age",
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                )
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -211,7 +225,7 @@ fun EditPetDialog(
                         checkmarkColor = androidx.compose.ui.graphics.Color.White
                     )
                 )
-                Text("Has Owner")
+                Text("Has Owner", color = Color.DarkGray)
             }
             if (hasOwner) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -271,7 +285,7 @@ fun AdoptPetDialog(
                     color = MaterialTheme.colorScheme.error
                 )
             } else {
-                Text("Select an owner for ${petData.name}", style = MaterialTheme.typography.bodyLarge)
+                Text("Select an owner for ${petData.name}", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
                 Spacer(modifier = Modifier.height(8.dp))
                 CustomDropdownMenuField(
                     label = "Select Owner",

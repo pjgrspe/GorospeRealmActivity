@@ -13,16 +13,16 @@ object RealmHelper {
         val config = RealmConfiguration.Builder(schema = setOf(PetModel::class, OwnerModel::class))
             .name("petrealm.realm")
             .schemaVersion(2) // Use the property `schemaVersion` instead of a method
-            .initialData {
-                copyToRealm(PetModel().apply { name = "Browny"; age = 5; petType = "Aspin" })
-                copyToRealm(OwnerModel().apply {
-                    name = "Angelo"; pets.addAll(
-                    listOf(
-                        PetModel().apply { name = "Choco"; age = 5; petType = "Aspin" }
-                    )
-                )
-                })
-            }
+//            .initialData {
+//                copyToRealm(PetModel().apply { name = "Browny"; age = 5; petType = "Dog" })
+//                copyToRealm(OwnerModel().apply {
+//                    name = "Angelo"; pets.addAll(
+//                    listOf(
+//                        PetModel().apply { name = "Choco"; age = 5; petType = "Dog" }
+//                    )
+//                )
+//                })
+//            }
             .build()
 
         realmInstance = Realm.open(config)

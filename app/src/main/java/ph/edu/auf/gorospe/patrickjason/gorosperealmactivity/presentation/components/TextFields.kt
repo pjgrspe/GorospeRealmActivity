@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetTypeWithIcon
 
@@ -47,7 +49,8 @@ fun CustomTextField(
     placeholder: String = "",
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
-    trailingIcon: (@Composable () -> Unit)? = null
+    trailingIcon: (@Composable () -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default // Change this line
 ) {
     Column(
         modifier = modifier
@@ -71,7 +74,7 @@ fun CustomTextField(
                 Text(
                     text = placeholder,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color(0xFF5D4037).copy(alpha = 0.5f)
+                        color = Color.Gray
                     )
                 )
             },
@@ -81,11 +84,15 @@ fun CustomTextField(
                 unfocusedBorderColor = Color(0xFF5D4037),
                 focusedBorderColor = Color(0xFF5D4037),
                 cursorColor = Color(0xFF81C784),
-                focusedTextColor = Color(0xFF5D4037)
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.DarkGray
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(2.dp, RoundedCornerShape(16.dp))
+                .shadow(2.dp, RoundedCornerShape(16.dp)),
+            keyboardOptions = keyboardOptions, // Update here
+            singleLine = true, // Ensure single-line behavior
+            maxLines = 1 // Restrict to one line
         )
     }
 }
