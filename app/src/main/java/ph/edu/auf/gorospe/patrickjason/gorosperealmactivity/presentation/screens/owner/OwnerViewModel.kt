@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.realm.kotlin.ext.query
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.RealmHelper
@@ -31,6 +32,7 @@ class OwnerViewModel : ViewModel() {
     }
 
     // Observes search query changes with debounce to prevent rapid database queries
+    @OptIn(FlowPreview::class)
     private fun observeSearchQuery() {
         viewModelScope.launch {
             searchQuery

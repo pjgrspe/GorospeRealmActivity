@@ -11,7 +11,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.RealmHelper
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.domain.navigation.AppNavigation
-import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.ui.theme.AppTheme
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.ui.theme.RealmActivityTheme
 
 class MainActivity : ComponentActivity() {
