@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.launch
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.PetModel
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.data.database.realmmodel.toPetData
 import ph.edu.auf.gorospe.patrickjason.gorosperealmactivity.presentation.components.ItemPet
